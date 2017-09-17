@@ -19,12 +19,7 @@
 #include <cJSON.h>
 #include "util.h"
 
-/* This callback gets invoked when we get any http request that doesn't match
- * any other callback.  Like any evhttp server callback, it has a simple job:
- * it must eventually call evhttp_send_error() or evhttp_send_reply().
- */
-void
-persistent_cb (struct evhttp_request *req, void *arg)
+void persistent_cb (struct evhttp_request *req, void *arg)
 { 
     struct evbuffer *evb = NULL;
     const char *uri = evhttp_request_get_uri (req);
@@ -73,14 +68,87 @@ persistent_cb (struct evhttp_request *req, void *arg)
        具体的：可以根据Post的参数执行相应操作，然后将结果输出
        ...
     */
+    /*
+     *
+     *    https://ip:port/persistent [json_data]  
+     *        {
+     *            cmd: "insert",
+     *            busi: "reg",
+     *            table: "OBO_TABLE_USER",
+
+     *            username:  "盖伦",
+     *            password:  "ADSWADSADWQ(MD5加密之后的)",
+     *            tel     :  "13332133313",
+     *            email   :  "danbing_at@163.com",
+     *            id_card :  "21040418331323",
+     *            driver  :  "yes",
+     *         }
+     *
+     *
+     *
+     *
+     * */
+
+    int is_succ = 0; //0 succ, -1 fail;
+    cJSON *root= cJSON_Parse(request_data_buf);
+    char *reason = NULL;
+
+    //unpack json
+
+    cJSON *cmd = cJSON_GetObjectItem(root, "cmd");
+    if (strcmp(cmd->valuestring, "insert") == 0) {
+        //插入业务
+
+        cJSON* table = cJSON_GetObjectItem(root, "table");
+        if (strcmp(table->valuestring, "OBO_TABLE_USER")== 0) {
+            //入库用户表的业务
+            cJSON *username = cJSON_GetObjectItem(root, "username");
+            cJSON *password = cJSON_GetObjectItem(root, "password");
+            cJSON *driver = cJSON_GetObjectItem(root, "driver");
+            cJSON *email = cJSON_GetObjectItem(root, "email");
+            cJSON *tel = cJSON_GetObjectItem(root, "tel");
+            cJSON *id_card = cJSON_GetObjectItem(root, "id_card");
+
+            printf("username = %s\n", username->valuestring);
+            printf("password = %s\n", password->valuestring);
+            printf("email = %s\n", email->valuestring);
+            printf("tel = %s\n", tel->valuestring);
+            printf("driver = %s\n", driver->valuestring);
+            printf("id_card = %s\n", id_card->valuestring);
+
+            printf("insert %s \n" ,table->valuestring);
+            //mysql的入库接口
+            //
+            //得到是否入库成功
+
+
+            is_succ = 0;
+            reason = "insert table error";
+        }
+    }
+    else if (strcmp(cmd->valuestring, "query") == 0) {
+        //查询的业务
+    }
+
+
+
 
 
     
 
 
-    char *response_data  = malloc(4096);
-    memset(response_data, 0, 4096);
-    strcpy(response_data, "{\"result\":\"ok\"}");
+    char *response_data  = NULL;
+
+    cJSON *response_web = cJSON_CreateObject();
+    if (is_succ == 0) {
+        cJSON_AddStringToObject(response_web, "result", "ok");
+    }
+    else {
+        cJSON_AddStringToObject(response_web, "result", "error");
+        cJSON_AddStringToObject(response_web, "reason", reason);
+    }
+
+    response_data = cJSON_Print(response_web);
 
     /* This holds the content we're sending. */
 
@@ -104,4 +172,6 @@ persistent_cb (struct evhttp_request *req, void *arg)
     printf("%s\n", response_data);
 
     free(response_data);
+    cJSON_Delete(response_web);
+    cJSON_Delete(root);
 }

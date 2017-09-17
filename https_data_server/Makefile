@@ -11,7 +11,7 @@ src = $(wildcard *.c)
 obj = $(patsubst %.c, %.o, $(src))
 
 
-server=server
+server=https_data_server
 
 target=$(server)
 
