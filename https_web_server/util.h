@@ -14,8 +14,23 @@
 #include <openssl/err.h>
 
 
+#define OBO_TABLE_USER "OBO_TABLE_USER"
+
+#define DATA_SERVER_IP "101.200.1.1"
+#define DATA_SERVER_PORT "8081"
+
+#define RESPONSE_DATA_LEN 4096
+
+typedef struct response_data
+{
+    char data[RESPONSE_DATA_LEN];
+    int data_len;
+}response_data_t;
+
 void login_cb (struct evhttp_request *req, void *arg);
 void reg_cb (struct evhttp_request *req, void *arg);
+
+size_t deal_response_data(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 

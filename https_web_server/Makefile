@@ -2,7 +2,7 @@
 CC=gcc
 CPPFLAGS= -I. -I./include 
 CFLAGS=-Wall 
-LIBS=-lpthread -levent -lm -lssl -lcrypto -levent_openssl  -L/usr/local/lib
+LIBS=-lpthread -levent -lm -lssl -lcrypto -levent_openssl -lcurl -L/usr/local/lib 
 
 #找到当前目录下所有的.c文件
 src = $(wildcard *.c)
@@ -11,7 +11,7 @@ src = $(wildcard *.c)
 obj = $(patsubst %.c, %.o, $(src))
 
 
-server=server
+server=https_web_server
 
 target=$(server)
 
@@ -25,7 +25,7 @@ $(obj):%.o:%.c
 
 
 #server程序
-$(server): https-server.o https-common.o cJSON.o login.o  reg.o
+$(server): https-server.o https-common.o cJSON.o login.o  reg.o util.o
 	$(CC) $^ -o $@ $(LIBS)
 
 
