@@ -195,6 +195,14 @@ void reg_cb (struct evhttp_request *req, void *arg)
 
     //TODO 如果入库成功
     //应该创建一个sessionid
+    char sessionid[SESSION_ID_LEN] = {0};
+
+    create_sessionid(driver->valuestring, sessionid);
+
+    //将sessionid 通过远程服务器 存到缓存中
+    //
+
+    //将sessionid设置一个生命周期 (向远程存储服务器发出通信)
 
 
 
@@ -214,6 +222,8 @@ void reg_cb (struct evhttp_request *req, void *arg)
     cJSON *response_jni = cJSON_CreateObject();
     if (is_reg_succ == 0) {
         cJSON_AddStringToObject(response_jni, "result", "ok");
+        //加上sessionid
+        cJSON_AddStringToObject(response_jni, "sessionid", sessionid);
     }
     else {
         cJSON_AddStringToObject(response_jni, "result", "error");
